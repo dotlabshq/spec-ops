@@ -1,0 +1,13 @@
+{
+    "chat.promptFilesRecommendations": {
+        "specops.constitution": true,
+        "specops.specify": true,
+        "specops.plan": true,
+        "specops.tasks": true,
+        "specops.implement": true
+    },
+    "chat.tools.terminal.autoApprove": {
+        ".specops/scripts/bash/": true,
+        ".specops/scripts/powershell/": true
+    }
+}

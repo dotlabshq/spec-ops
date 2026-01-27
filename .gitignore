@@ -24,27 +24,23 @@ wheels/
 venv/
 ENV/
 env/
+.venv
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
-
-# OS
 .DS_Store
-Thumbs.db
+*.tmp
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
+# Project specific
+*.log
+.env
+.env.local
+*.lock
 
-# MyPy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Ruff
-.ruff_cache/
+# Spec Kit-specific files
+.genreleases/
+*.zip
+sdd-*/

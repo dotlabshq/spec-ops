@@ -29,6 +29,27 @@
 - Store sensitive data in Ansible Vault
 - Document all variables in `group_vars` with clear descriptions
 
+#### Ingress Controller (NGINX Ingress)
+- Use NGINX Ingress Controller for external traffic routing
+- Deploy via Kustomize manifests (no Helm)
+- Configure IngressClass as default for cluster-wide routing
+- Enable rate limiting and request size limits for security
+- Use annotations for advanced routing configurations
+- Configure health checks and readiness probes
+- Document all custom annotations used
+- Regular updates following security advisories
+
+#### TLS Certificate Management (cert-manager)
+- Use cert-manager for automated TLS certificate lifecycle
+- Deploy via Kustomize manifests (no Helm)
+- Configure ClusterIssuers for Let's Encrypt (staging and production)
+- Use DNS-01 challenge for wildcard certificates when needed
+- Use HTTP-01 challenge for standard domain certificates
+- Store ACME account keys securely
+- Monitor certificate expiration with alerts (30 days before expiry)
+- Document certificate renewal procedures
+- Regular rotation of CA certificates
+
 #### Application Deployment (ArgoCD)
 - All application deployments must use GitOps via ArgoCD
 - Use Helm charts or Kustomize for application definitions
