@@ -1,30 +1,29 @@
 ---
-description: "Infrastructure deployment task list template"
+
+description: "Task list template for feature implementation"
 ---
 
-# Infrastructure Tasks: [INFRASTRUCTURE NAME]
+# Tasks: [FEATURE NAME]
 
 **Input**: Design documents from `/specs/[###-feature-name]/`
-**Prerequisites**: plan.md (required), spec.md (required for infrastructure scenarios), research.md, architecture.md
+**Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Validation**: All infrastructure tasks include mandatory validation checkpoints. Each phase must pass validation before proceeding.
+**Validation**: The examples below include validation tasks. Validation tasks are OPTIONAL - only include them if explicitly requested in the infrastructure specification.
 
-**Organization**: Tasks are grouped by infrastructure deployment phases to enable sequential deployment with validation gates.
+**Organization**: Tasks are grouped by infrastructure scenario to enable independent deployment and validation of each scenario.
 
 ## Format: `[ID] [P?] [Scenario] Description`
 
 - **[P]**: Can run in parallel (different resources, no dependencies)
-- **[Scenario]**: Which infrastructure scenario this task belongs to (e.g., IS1, IS2, IS3 from spec.md)
-- Include exact file paths or commands in descriptions
+- **[Scenario]**: Which infrastructure scenario this task belongs to (e.g., IS1, IS2, IS3)
+- Include exact file paths in descriptions (IaC modules, manifests, configs)
 
 ## Path Conventions
 
-Technology-agnostic - adjust based on your chosen tools from plan.md:
-- **Infrastructure Code**: May use Terraform, Pulumi, CloudFormation, Bicep, CDK
-- **Configuration**: May use Ansible, Chef, Puppet, SaltStack, scripts
-- **Platform**: May use Kubernetes, OpenShift, Nomad, ECS, Docker Swarm
-- **Deployment**: May use ArgoCD, Flux, Helm, Jenkins, GitLab CI
-- Paths shown below are examples - adjust based on plan.md structure
+- **Single IaC tool**: `terraform/`, `validation/` at repository root
+- **Multi-tool**: `terraform/`, `k8s/`, `argocd/`
+- **Multi-tenant**: `terraform/shared/`, `terraform/tenants/`, `k8s/tenants/`
+- Paths shown below assume single IaC tool - adjust based on plan.md structure
 
 <!-- 
   ============================================================================
@@ -32,49 +31,45 @@ Technology-agnostic - adjust based on your chosen tools from plan.md:
   
   The /specops.tasks command MUST replace these with actual tasks based on:
   - Infrastructure scenarios from spec.md (with their priorities P1, P2, P3...)
-  - Technology stack from plan.md
-  - Components from architecture.md
-  - Requirements from spec.md
+  - Infrastructure requirements from plan.md
+  - Resource definitions from data-model.md
+  - Service interfaces from contracts/
   
   Tasks MUST be organized by infrastructure scenario so each scenario can be:
   - Deployed independently
   - Validated independently
-  - Rolled back if needed
+  - Rolled back as an independent increment
   
   DO NOT keep these sample tasks in the generated tasks.md file.
   ============================================================================
 -->
 
-## Phase 1: Prerequisites & Setup (Shared Infrastructure)
+## Phase 1: Setup (Prerequisites & Provider Configuration)
 
-**Purpose**: Environment preparation and tool verification
+**Purpose**: Provider configuration, state backend, and credentials setup
 
-- [ ] T001 Verify access credentials (cloud provider or on-premise)
-- [ ] T002 Create remote state storage for infrastructure code
-- [ ] T003 [P] Initialize version control repository structure
-- [ ] T004 [P] Verify required tools installed (check versions)
-- [ ] T005 [P] Configure authentication mechanisms (SSH keys, tokens, certificates)
-
-**Checkpoint**: ✓ Environment ready for infrastructure deployment
+- [ ] T001 Configure cloud provider credentials and authentication
+- [ ] T002 Initialize state backend (S3+DynamoDB, Azure Blob, GCS, etc.)
+- [ ] T003 [P] Setup IaC project structure per implementation plan
 
 ---
 
-## Phase 2: Foundational Infrastructure (Blocking Prerequisites)
+## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: Core infrastructure that MUST be complete before ANY scenario can be implemented
+**Purpose**: Core infrastructure that MUST be complete before ANY infrastructure scenario can be deployed
 
-**⚠️ CRITICAL**: No infrastructure scenario work can begin until this phase is complete
+**⚠️ CRITICAL**: No scenario work can begin until this phase is complete
 
-Examples of foundational tasks (adjust based on your infrastructure):
+Examples of foundational tasks (adjust based on your project):
 
-- [ ] T006 Create network infrastructure (virtual network, subnets, routing)
-- [ ] T007 [P] Configure security perimeter (firewalls, security groups, network ACLs)
-- [ ] T008 [P] Provision compute resources (virtual machines, instances, nodes)
-- [ ] T009 Configure DNS and service discovery
-- [ ] T010 Setup shared storage or persistent volumes
-- [ ] T011 Configure logging and audit infrastructure
+- [ ] T004 Create VPC/networking module in terraform/modules/vpc/
+- [ ] T005 [P] Configure IAM roles and policies in terraform/modules/iam/
+- [ ] T006 [P] Setup security groups and network ACLs
+- [ ] T007 Create base resource modules that all scenarios depend on
+- [ ] T008 Configure logging and monitoring infrastructure
+- [ ] T009 Setup secrets management integration (Vault, Secrets Manager, etc.)
 
-**Checkpoint**: Foundation ready - infrastructure scenarios can now be deployed
+**Checkpoint**: Foundation ready - infrastructure scenario deployment can now begin in parallel
 
 ---
 
@@ -84,24 +79,23 @@ Examples of foundational tasks (adjust based on your infrastructure):
 
 **Independent Validation**: [How to verify this scenario works on its own]
 
-### Validation for Infrastructure Scenario 1 ⚠️
+### Validation for Scenario 1 (OPTIONAL - only if validation requested) ⚠️
 
-> **NOTE: Define validation criteria BEFORE deployment**
+> **NOTE: Write these validation tests FIRST, ensure infrastructure doesn't pass before deployment**
 
-- [ ] T012 [P] [IS1] Define success criteria for [infrastructure component]
-- [ ] T013 [P] [IS1] Create validation tests for [infrastructure capability]
+- [ ] T010 [P] [IS1] Pre-deploy validation script in validation/pre-deploy/[name].sh
+- [ ] T011 [P] [IS1] Post-deploy validation script in validation/post-deploy/[name].sh
 
-### Implementation for Infrastructure Scenario 1
+### Provisioning for Scenario 1
 
-- [ ] T014 [P] [IS1] Create [component A] configuration in [path/to/config-a]
-- [ ] T015 [P] [IS1] Create [component B] configuration in [path/to/config-b]
-- [ ] T016 [IS1] Deploy [component A] (depends on T014)
-- [ ] T017 [IS1] Deploy [component B] (depends on T015)
-- [ ] T018 [IS1] Configure [integration/networking] between components
-- [ ] T019 [IS1] Apply [security policies/access controls]
-- [ ] T020 [IS1] Validate deployment meets acceptance criteria
+- [ ] T012 [P] [IS1] Create [Resource1] module in terraform/modules/[resource1]/
+- [ ] T013 [P] [IS1] Create [Resource2] module in terraform/modules/[resource2]/
+- [ ] T014 [IS1] Configure [Resource] dependencies in terraform/environments/[env]/main.tf
+- [ ] T015 [IS1] Apply [resource/configuration] in terraform/environments/[env]/
+- [ ] T016 [IS1] Configure outputs and variables for scenario 1
+- [ ] T017 [IS1] Document rollback procedure for scenario 1
 
-**Checkpoint**: At this point, Infrastructure Scenario 1 should be fully functional and independently testable
+**Checkpoint**: At this point, Infrastructure Scenario 1 should be fully deployed and validated independently
 
 ---
 
@@ -111,20 +105,19 @@ Examples of foundational tasks (adjust based on your infrastructure):
 
 **Independent Validation**: [How to verify this scenario works on its own]
 
-### Validation for Infrastructure Scenario 2 ⚠️
+### Validation for Scenario 2 (OPTIONAL - only if validation requested) ⚠️
 
-- [ ] T021 [P] [IS2] Define success criteria for [infrastructure component]
-- [ ] T022 [P] [IS2] Create validation tests for [infrastructure capability]
+- [ ] T018 [P] [IS2] Pre-deploy validation script in validation/pre-deploy/[name].sh
+- [ ] T019 [P] [IS2] Post-deploy validation script in validation/post-deploy/[name].sh
 
-### Implementation for Infrastructure Scenario 2
+### Provisioning for Scenario 2
 
-- [ ] T023 [P] [IS2] Create [component] configuration in [path/to/config]
-- [ ] T024 [IS2] Deploy [component]
-- [ ] T025 [IS2] Configure [integration] with Scenario 1 (if needed)
-- [ ] T026 [IS2] Apply [policies/controls]
-- [ ] T027 [IS2] Validate deployment meets acceptance criteria
+- [ ] T020 [P] [IS2] Create [Resource] module in terraform/modules/[resource]/
+- [ ] T021 [IS2] Configure [Resource] in terraform/environments/[env]/
+- [ ] T022 [IS2] Apply [resource/configuration] for scenario 2
+- [ ] T023 [IS2] Integrate with Scenario 1 infrastructure (if needed)
 
-**Checkpoint**: At this point, Infrastructure Scenarios 1 AND 2 should both work independently
+**Checkpoint**: At this point, Scenarios 1 AND 2 should both work independently
 
 ---
 
@@ -134,20 +127,18 @@ Examples of foundational tasks (adjust based on your infrastructure):
 
 **Independent Validation**: [How to verify this scenario works on its own]
 
-### Validation for Infrastructure Scenario 3 ⚠️
+### Validation for Scenario 3 (OPTIONAL - only if validation requested) ⚠️
 
-- [ ] T028 [P] [IS3] Define success criteria for [infrastructure component]
-- [ ] T029 [P] [IS3] Create validation tests for [infrastructure capability]
+- [ ] T024 [P] [IS3] Pre-deploy validation script in validation/pre-deploy/[name].sh
+- [ ] T025 [P] [IS3] Post-deploy validation script in validation/post-deploy/[name].sh
 
-### Implementation for Infrastructure Scenario 3
+### Provisioning for Scenario 3
 
-- [ ] T030 [P] [IS3] Create [component] configuration in [path/to/config]
-- [ ] T031 [IS3] Deploy [component]
-- [ ] T032 [IS3] Configure [integration]
-- [ ] T033 [IS3] Apply [policies/controls]
-- [ ] T034 [IS3] Validate deployment meets acceptance criteria
+- [ ] T026 [P] [IS3] Create [Resource] module in terraform/modules/[resource]/
+- [ ] T027 [IS3] Configure [Resource] in terraform/environments/[env]/
+- [ ] T028 [IS3] Apply [resource/configuration] for scenario 3
 
-**Checkpoint**: All infrastructure scenarios should now be independently functional
+**Checkpoint**: All infrastructure scenarios should now be independently deployable and validated
 
 ---
 
@@ -155,16 +146,17 @@ Examples of foundational tasks (adjust based on your infrastructure):
 
 ---
 
-## Phase N: Monitoring & Cross-Cutting Concerns
+## Phase N: Polish & Cross-Cutting Concerns
 
-**Purpose**: Observability and improvements that affect multiple scenarios
+**Purpose**: Improvements that affect multiple infrastructure scenarios
 
-- [ ] TXXX [P] Deploy monitoring and alerting infrastructure
-- [ ] TXXX [P] Configure dashboards for infrastructure visibility
-- [ ] TXXX Update operational documentation in docs/
-- [ ] TXXX Infrastructure optimization and cost review
-- [ ] TXXX Security hardening and compliance verification
-- [ ] TXXX Backup and disaster recovery testing
+- [ ] TXXX [P] Documentation updates in docs/ (runbooks, architecture diagrams)
+- [ ] TXXX Infrastructure code cleanup and refactoring
+- [ ] TXXX Performance optimization across all scenarios
+- [ ] TXXX [P] Additional validation tests (if requested) in validation/
+- [ ] TXXX Security hardening and compliance checks
+- [ ] TXXX Configure alerting and monitoring dashboards
+- [ ] TXXX Run quickstart.md validation scenarios
 
 ---
 
@@ -172,34 +164,34 @@ Examples of foundational tasks (adjust based on your infrastructure):
 
 ### Phase Dependencies
 
-- **Prerequisites (Phase 1)**: No dependencies - can start immediately
-- **Foundational (Phase 2)**: Depends on Prerequisites completion - BLOCKS all scenarios
+- **Setup (Phase 1)**: No dependencies - can start immediately
+- **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all infrastructure scenarios
 - **Infrastructure Scenarios (Phase 3+)**: All depend on Foundational phase completion
   - Scenarios can then proceed in parallel (if resources allow)
   - Or sequentially in priority order (P1 → P2 → P3)
-- **Monitoring (Final Phase)**: Depends on all desired scenarios being deployed
+- **Polish (Final Phase)**: Depends on all desired scenarios being complete
 
 ### Infrastructure Scenario Dependencies
 
 - **Scenario 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other scenarios
-- **Scenario 2 (P2)**: Can start after Foundational (Phase 2) - May integrate with IS1 but should be independently testable
-- **Scenario 3 (P3)**: Can start after Foundational (Phase 2) - May integrate with IS1/IS2 but should be independently testable
+- **Scenario 2 (P2)**: Can start after Foundational (Phase 2) - May integrate with IS1 but should be independently deployable
+- **Scenario 3 (P3)**: Can start after Foundational (Phase 2) - May integrate with IS1/IS2 but should be independently deployable
 
-### Within Each Scenario
+### Within Each Infrastructure Scenario
 
-- Validation criteria defined BEFORE deployment
-- Configuration before deployment
-- Core deployment before integration
-- Security/policies before validation
+- Validation scripts (if included) MUST be written before deployment
+- Modules before environment configurations
+- Dependencies before dependent resources
+- Core provisioning before integration
 - Scenario complete and validated before moving to next priority
 
 ### Parallel Opportunities
 
-- All Prerequisites tasks marked [P] can run in parallel
+- All Setup tasks marked [P] can run in parallel
 - All Foundational tasks marked [P] can run in parallel (within Phase 2)
-- Once Foundational phase completes, all scenarios can start in parallel (if resources allow)
-- All validation tests for a scenario marked [P] can run in parallel
-- Configuration files within a scenario marked [P] can be created in parallel
+- Once Foundational phase completes, all scenarios can start in parallel (if team capacity allows)
+- All validation tasks for a scenario marked [P] can run in parallel
+- Modules within a scenario marked [P] can run in parallel
 - Different scenarios can be worked on in parallel by different team members
 
 ---
@@ -207,13 +199,13 @@ Examples of foundational tasks (adjust based on your infrastructure):
 ## Parallel Example: Infrastructure Scenario 1
 
 ```bash
-# Define all validation criteria together:
-Task: "Define success criteria for network configuration"
-Task: "Create validation tests for compute resources"
+# Launch all validation scripts for Scenario 1 together (if validation requested):
+Task: "Pre-deploy validation script in validation/pre-deploy/[name].sh"
+Task: "Post-deploy validation script in validation/post-deploy/[name].sh"
 
-# Create all configurations together:
-Task: "Create network config in infrastructure/network/main.tf"
-Task: "Create compute config in infrastructure/compute/main.tf"
+# Launch all modules for Scenario 1 together:
+Task: "Create [Resource1] module in terraform/modules/[resource1]/"
+Task: "Create [Resource2] module in terraform/modules/[resource2]/"
 ```
 
 ---
@@ -222,63 +214,40 @@ Task: "Create compute config in infrastructure/compute/main.tf"
 
 ### MVP First (Infrastructure Scenario 1 Only)
 
-1. Complete Phase 1: Prerequisites
+1. Complete Phase 1: Setup
 2. Complete Phase 2: Foundational (CRITICAL - blocks all scenarios)
 3. Complete Phase 3: Infrastructure Scenario 1
-4. **STOP and VALIDATE**: Test Scenario 1 independently
-5. Deploy/demo if ready
+4. **STOP and VALIDATE**: Validate Scenario 1 independently
+5. Deploy to staging/production if ready
 
 ### Incremental Delivery
 
-1. Complete Prerequisites + Foundational → Foundation ready
-2. Add Infrastructure Scenario 1 → Validate independently → Deploy (MVP!)
-3. Add Infrastructure Scenario 2 → Validate independently → Deploy
-4. Add Infrastructure Scenario 3 → Validate independently → Deploy
-5. Each scenario adds capability without breaking previous scenarios
+1. Complete Setup + Foundational → Foundation ready
+2. Add Scenario 1 → Validate independently → Deploy (MVP!)
+3. Add Scenario 2 → Validate independently → Deploy
+4. Add Scenario 3 → Validate independently → Deploy
+5. Each scenario adds value without breaking previous deployments
 
 ### Parallel Team Strategy
 
-With multiple team members:
+With multiple engineers:
 
-1. Team completes Prerequisites + Foundational together
+1. Team completes Setup + Foundational together
 2. Once Foundational is done:
-   - Team Member A: Infrastructure Scenario 1
-   - Team Member B: Infrastructure Scenario 2
-   - Team Member C: Infrastructure Scenario 3
-3. Scenarios deployed and validated independently
-
----
-
-## Rollback Procedures
-
-Document rollback steps per scenario to enable safe recovery:
-
-### Infrastructure Scenario 1 Rollback
-```
-[Tool-specific rollback commands]
-Example: terraform destroy -target=module.scenario1
-```
-
-### Infrastructure Scenario 2 Rollback
-```
-[Tool-specific rollback commands]
-```
-
-### Complete Infrastructure Rollback
-```
-[Commands to tear down entire infrastructure in reverse order]
-Phase N → Phase 5 → Phase 4 → Phase 3 → Phase 2
-```
+   - Engineer A: Infrastructure Scenario 1
+   - Engineer B: Infrastructure Scenario 2
+   - Engineer C: Infrastructure Scenario 3
+3. Scenarios complete and integrate independently
 
 ---
 
 ## Notes
 
-- [P] tasks = different resources/files, no dependencies, safe to parallelize
-- [Scenario] label (IS1, IS2, IS3) maps task to specific infrastructure scenario for traceability
-- Each scenario should be independently deployable and testable
-- Validation criteria must be defined before deployment
+- [P] tasks = different resources, no dependencies
+- [Scenario] label maps task to specific infrastructure scenario for traceability
+- Each infrastructure scenario should be independently deployable and validated
+- Verify validation scripts are ready before deploying
 - Commit after each task or logical group
 - Stop at any checkpoint to validate scenario independently
-- Document all validation commands in plan.md
-- Avoid: vague tasks, resource conflicts, cross-scenario dependencies that break independence
+- Document rollback procedures for each scenario
+- Avoid: vague tasks, same resource conflicts, cross-scenario dependencies that break independence

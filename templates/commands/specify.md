@@ -39,480 +39,228 @@ Given that feature description, do this:
       - "Configure multi-tenant namespaces with Cilium" → "multi-tenant-networking"
       - "Add backup solution for PostgreSQL" → "postgres-backup"
 
-
-
-### 1. Generate Infrastructure Feature Name
-
-**Create a concise short name** (2-4 words) for the branch:
-- Analyze the infrastructure description and extract key components
-- Use action-noun format for infrastructure: `deploy-[component]`, `setup-[service]`, `configure-[feature]`
-- Preserve technical terms: SSO, monitoring, ArgoCD, Cilium, K8s, etc.
-- Examples:
-  - "Deploy single sign-on solution" → "sso-deployment"
-  - "Set up monitoring with Prometheus and Grafana" → "monitoring-stack"
-  - "Configure multi-tenant namespaces with Cilium" → "multi-tenant-networking"
-  - "Add backup solution for PostgreSQL" → "postgres-backup"
-
-### 2. Check for Existing Infrastructure Features
-
-**Before creating new feature:**
-
-a. **Fetch latest state**:
-```bash
-git fetch --all --prune
-```
-
-b. **Find highest feature number** for this short-name across:
-- Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-<short-name>$'`
-- Local branches: `git branch | grep -E '^[* ]*[0-9]+-<short-name>$'`
-- Specs directories: Check `.specops/specs/[0-9]+-<short-name>`
-
-c. **Determine next number**:
-- Extract all numbers from all sources
-- Find highest number N
-- Use N+1 for new branch
-
-d. **Run feature creation script**:
-```bash
-.specops/scripts/create-new-feature.sh [short-name]
-```
-
-**IMPORTANT**:
-- Only run script once per feature
-- Script creates branch and initializes directory
-- Use script output to get BRANCH_NAME and SPEC_FILE paths
-
-### 3. Load Infrastructure Specification Template
-
-Read `.specops/templates/spec-template.md` to understand required sections for infrastructure specifications.
-
-### 4. Parse Infrastructure Requirements
-
-**Extract key infrastructure components:**
-
-1. **Infrastructure Type**:
-   - VM provisioning (Terraform)
-   - Kubernetes setup (Ansible)
-   - Application deployment (ArgoCD)
-   - Network configuration (Cilium)
-   - Monitoring/observability
-   - Backup/disaster recovery
-
-2. **Multi-Tenancy Requirements**:
-   - Which organizations need access?
-   - Namespace isolation strategy
-   - Resource quotas per organization
-   - Network policies required
-
-3. **Technical Constraints**:
-   - Cloud provider
-   - Compliance requirements (SOC2, HIPAA, etc.)
-   - Performance targets (RTO, RPO, uptime)
-   - Budget constraints
-
-4. **Dependencies**:
-   - Existing infrastructure
-   - External services
-   - Required credentials/access
-
-### 5. Make Informed Infrastructure Decisions
-
-**For unclear aspects, use industry-standard defaults:**
-
-✅ **Make reasonable assumptions** (document in Assumptions section):
-- Namespace naming: `{org-name}-{environment}` pattern
-- Network policies: Default deny-all with explicit allows
-- Resource quotas: Based on organization size (small/medium/large)
-- Backup retention: 30 days hot, 90 days cold, 1 year archive
-- RTO/RPO: Standard for application tier (critical/standard/low-priority)
-
-❌ **Only ask for clarification** (max 3 total) if:
-- Multiple cloud providers possible and significantly different costs
-- Compliance requirements unclear (HIPAA vs SOC2 vs both)
-- Organization list unknown (can't proceed without it)
-- Critical security boundaries undefined
-
-**Prioritize clarifications**: 
-Multi-tenancy scope > Compliance > Performance targets > Technical preferences
-
-### 6. Create Infrastructure Specification
-
-**Fill specification following template structure:**
-
-#### Overview Section
-- Feature name and ID
-- Business context (why this infrastructure is needed)
-- Infrastructure goals (what it enables)
-
-#### Requirements Section
-
-**Functional Requirements (Infrastructure-specific)**:
-```
-FR-1: Deploy [Component]
-Priority: Critical
-Description: [What infrastructure resources needed]
-Acceptance Criteria:
-- [ ] [Resource 1] provisioned and accessible
-- [ ] [Resource 2] configured correctly
-- [ ] [Resource 3] integrated with existing infrastructure
-```
-
-**Non-Functional Requirements**:
-- **Performance**: Uptime SLA, latency targets, throughput
-- **Scalability**: Resource limits, growth capacity
-- **Security**: Compliance standards, network isolation, access control
-- **Reliability**: Backup strategy, disaster recovery, failover
-
-#### Infrastructure Scenarios
-
-**Template for scenarios**:
-```
-Scenario N: [Scenario Name]
-Actor: [Platform Admin / Developer / End User]
-Preconditions:
-  - [Existing infrastructure state]
-  - [Required access/credentials]
-
-Flow:
-1. [Terraform provisions resources]
-2. [Ansible configures services]
-3. [ArgoCD deploys applications]
-4. [Verification steps]
-
-Postconditions:
-  - [Infrastructure state after deployment]
-  - [Accessibility/connectivity established]
-
-Validation:
-- [ ] [How to verify this scenario works]
-```
-
-#### Multi-Tenancy Requirements
-
-**Specify clearly**:
-- Organization list with namespaces
-- Resource quotas per organization
-- Network isolation approach
-- RBAC requirements
-- Separate or shared resources
-
-**Example**:
-```yaml
-Organizations:
-  - name: acme
-    namespaces:
-      - acme-prod
-      - acme-dev
-    quota:
-      cpu: "10"
-      memory: "20Gi"
-      pods: "50"
-  
-  - name: contoso
-    namespaces:
-      - contoso-prod
-    quota:
-      cpu: "5"
-      memory: "10Gi"
-      pods: "30"
-```
-
-#### Dependencies Section
-
-**Infrastructure Dependencies**:
-- Existing VMs/cloud accounts
-- Network configuration (VPC, subnets)
-- DNS setup
-- Load balancers
-- Storage systems
-
-**External Dependencies**:
-- Third-party services
-- External APIs
-- Cloud provider features
-
-### 7. Specification Quality Validation
-
-**Create validation checklist** at `.specops/specs/[FEATURE_ID]/checklists/requirements.md`:
-
-```markdown
-# Infrastructure Specification Quality Checklist: [FEATURE NAME]
-
-**Purpose**: Validate infrastructure specification completeness
-**Created**: [DATE]
-**Feature**: [Link to spec.md]
-
-## Infrastructure Completeness
-
-- [ ] Infrastructure type clearly defined (VM/K8s/App/Network)
-- [ ] All required resources identified
-- [ ] Multi-tenancy requirements specified
-- [ ] Organization list and quotas defined
-- [ ] Network isolation approach documented
-
-## Requirement Quality
-
-- [ ] No implementation details (specific Terraform modules, Ansible roles)
-- [ ] No [NEEDS CLARIFICATION] markers remain (max 3 allowed)
-- [ ] All acceptance criteria are verifiable
-- [ ] Success criteria are measurable and infrastructure-focused
-- [ ] Dependencies identified (cloud account, existing infra, credentials)
-
-## Multi-Tenancy Validation
-
-- [ ] Each organization has namespace strategy
-- [ ] Resource quotas specified per organization
-- [ ] Network policy requirements defined
-- [ ] RBAC/access control requirements clear
-
-## Security & Compliance
-
-- [ ] Compliance requirements identified (if applicable)
-- [ ] Security boundaries defined
-- [ ] Secret management approach outlined
-- [ ] Backup/DR requirements specified
-
-## Infrastructure Scenarios
-
-- [ ] Deployment scenarios cover main flows
-- [ ] Validation steps included for each scenario
-- [ ] Rollback procedures considered
-- [ ] Edge cases identified
-
-## Notes
-
-- Items marked incomplete require spec updates before `/specops.plan`
-- Maximum 3 [NEEDS CLARIFICATION] markers allowed
-```
-
-**Run Validation**:
-
-1. Review spec against checklist
-2. **If all items pass**: Mark complete, proceed to step 8
-3. **If items fail** (excluding [NEEDS CLARIFICATION]):
-   - List failing items with specific issues
-   - Update spec to address issues
-   - Re-run validation (max 3 iterations)
-   - Document remaining issues in checklist notes
-
-4. **If [NEEDS CLARIFICATION] markers remain**:
-   - Extract all markers from spec
-   - **LIMIT**: Max 3 markers (prioritize by impact)
-   - Present questions with table format:
-
-```markdown
-## Question [N]: [Infrastructure Topic]
-
-**Context**: [Quote from spec]
-
-**What we need to know**: [Specific question]
-
-**Suggested Answers**:
-
-| Option | Answer | Implications |
-|--------|--------|--------------|
-| A | [Option A] | [Infrastructure impact] |
-| B | [Option B] | [Infrastructure impact] |
-| C | [Option C] | [Infrastructure impact] |
-| Custom | [Your answer] | [Explain custom input] |
-
-**Your choice**: _[Wait for response]_
-```
-
-   - **CRITICAL**: Proper markdown table formatting with aligned pipes
-   - Wait for user response: "Q1: A, Q2: B, Q3: Custom - [details]"
-   - Update spec with chosen answers
-   - Re-run validation
-
-5. **Update checklist** after each iteration
-
-### 8. Success Criteria Guidelines
-
-**Infrastructure-focused success criteria must be:**
-
-1. **Measurable**: Include specific metrics
-2. **Infrastructure-agnostic**: No mention of specific tools (use generic terms)
-3. **Operationally-focused**: Describe deployment/operational outcomes
-4. **Verifiable**: Can be tested without implementation knowledge
-
-**Good Infrastructure Examples**:
-- "Infrastructure provisioning completes in under 15 minutes"
-- "System supports 10,000 concurrent users with 99.9% uptime"
-- "Deployment rollback completes in under 5 minutes"
-- "Each organization isolated with dedicated resources"
-- "Backup recovery tested successfully (RPO: 1 hour, RTO: 4 hours)"
-- "Network policies prevent unauthorized cross-namespace communication"
-
-**Bad Examples** (too implementation-specific):
-- "Terraform apply runs in under 10 minutes" → Use "Infrastructure provisioning..."
-- "Ansible playbook completes successfully" → Use "Cluster configuration..."
-- "ArgoCD syncs in under 2 minutes" → Use "Application deployment..."
-- "Cilium policies are active" → Use "Network isolation enforced..."
-
-### 9. Constitution Alignment Check
-
-**Before finalizing, verify alignment with constitution**:
-
-```bash
-# Load constitution
-constitution_file=".specops/memory/constitution.md"
-
-# Check alignment:
-# - Technology stack matches constitution standards
-# - Multi-tenancy approach follows constitution strategy
-# - Security requirements meet constitution compliance
-# - Code quality standards referenced
-```
-
-**Add to spec if constitution exists**:
-```markdown
-## Constitution Alignment
-
-This specification aligns with the following constitution principles:
-- [PRINCIPLE_NAME]: [How spec aligns]
-- [TECHNOLOGY_STANDARD]: [Version/approach used]
-- [MULTI_TENANCY_STRATEGY]: [How implemented]
-```
-
-### 10. Write Specification
-
-Write complete specification to `SPEC_FILE` with:
-- All sections filled with concrete details
-- No implementation specifics (Terraform modules, Ansible playbooks, etc.)
-- Infrastructure-focused language (resources, namespaces, policies, quotas)
-- Clear multi-tenancy requirements
-- Measurable success criteria
-
-### 11. Report Completion
-
-Inform user with:
-
-```
-Infrastructure specification created successfully!
-
-Feature: [FEATURE_ID] - [FEATURE_NAME]
-Branch: [BRANCH_NAME]
-Location: .specops/specs/[FEATURE_ID]/spec.md
-Checklist: .specops/specs/[FEATURE_ID]/checklists/requirements.md
-
-Infrastructure Type: [VM/K8s/App/Network/Multi]
-Organizations: [COUNT] ([LIST])
-Compliance: [REQUIREMENTS]
-
-Validation Results:
-✓ All quality checks passed
-✓ No clarifications needed (OR: [N] clarifications resolved)
-✓ Multi-tenancy requirements complete
-✓ Constitution alignment verified
-
-Next Steps:
-1. Review specification for accuracy
-2. Get stakeholder approval if needed
-3. Run /specops.plan to create technical implementation plan
-
-Suggested commit message:
-feat(spec): add [FEATURE_ID] infrastructure specification
-```
+2. **Check for existing branches before creating new one**:
+
+   a. First, fetch all remote branches to ensure we have the latest information:
+
+      ```bash
+      git fetch --all --prune
+      ```
+
+   b. Find the highest feature number across all sources for the short-name:
+      - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-<short-name>$'`
+      - Local branches: `git branch | grep -E '^[* ]*[0-9]+-<short-name>$'`
+      - Specs directories: Check for directories matching `specs/[0-9]+-<short-name>`
+
+   c. Determine the next available number:
+      - Extract all numbers from all three sources
+      - Find the highest number N
+      - Use N+1 for the new branch number
+
+   d. Run the script `{SCRIPT}` with the calculated number and short-name:
+      - Pass `--number N+1` and `--short-name "your-short-name"` along with the feature description
+      - Bash example: `{SCRIPT} --json --number 5 --short-name "user-auth" "Add user authentication"`
+      - PowerShell example: `{SCRIPT} -Json -Number 5 -ShortName "user-auth" "Add user authentication"`
+
+   **IMPORTANT**:
+   - Check all three sources (remote branches, local branches, specs directories) to find the highest number
+   - Only match branches/directories with the exact short-name pattern
+   - If no existing branches/directories found with this short-name, start with number 1
+   - You must only ever run this script once per feature
+   - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
+   - The JSON output will contain BRANCH_NAME and SPEC_FILE paths
+   - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot")
+
+3. Load `templates/spec-template.md` to understand required sections.
+
+4. Follow this execution flow:
+
+    1. Parse user description from Input
+       If empty: ERROR "No feature description provided"
+    2. Extract key concepts from description
+       Identify: infrastructure components, deployment targets, organizations/tenants, constraints
+    3. For unclear aspects:
+       - Make informed guesses based on context and industry standards
+       - Only mark with [NEEDS CLARIFICATION: specific question] if:
+         - The choice significantly impacts infrastructure scope or multi-tenancy model
+         - Multiple reasonable interpretations exist with different cost/security implications
+         - No reasonable default exists (e.g., cloud provider, compliance requirements)
+       - **LIMIT: Maximum 3 [NEEDS CLARIFICATION] markers total**
+       - Prioritize clarifications by impact: multi-tenancy scope > compliance > performance targets > technical preferences
+    4. Fill Infrastructure Scenarios & Validation section
+       Each scenario must be independently deployable and testable
+       If no clear deployment flow: ERROR "Cannot determine infrastructure scenarios"
+    5. Generate Functional Requirements
+       Each requirement must be testable and technology-agnostic where possible
+       Use reasonable defaults for unspecified details (document assumptions in Assumptions section)
+    6. Define Success Criteria
+       Create measurable, technology-agnostic outcomes
+       Include both quantitative metrics (RTO, RPO, uptime, provisioning time) and operational measures (cluster health, resource utilization)
+       Each criterion must be verifiable without implementation details
+    7. Identify Key Infrastructure Components (if resources involved)
+    8. Return: SUCCESS (spec ready for planning)
+
+5. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
+
+6. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
+
+   a. **Create Spec Quality Checklist**: Generate a checklist file at `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with these validation items:
+
+      ```markdown
+      # Specification Quality Checklist: [FEATURE NAME]
+      
+      **Purpose**: Validate infrastructure specification completeness and quality before proceeding to planning
+      **Created**: [DATE]
+      **Feature**: [Link to spec.md]
+      
+      ## Content Quality
+      
+      - [ ] No premature tool/vendor lock-in (tool-agnostic where possible)
+      - [ ] Focused on infrastructure outcomes and operational needs
+      - [ ] Written for platform/DevOps teams and stakeholders
+      - [ ] All mandatory sections completed
+      
+      ## Requirement Completeness
+      
+      - [ ] No [NEEDS CLARIFICATION] markers remain
+      - [ ] Requirements are testable and unambiguous
+      - [ ] Success criteria are measurable (RTO, RPO, uptime, provisioning time)
+      - [ ] Success criteria are technology-agnostic (no specific tool versions)
+      - [ ] All infrastructure scenarios are defined with acceptance criteria
+      - [ ] Edge cases and failure modes are identified
+      - [ ] Scope is clearly bounded (what's in/out of this deployment)
+      - [ ] Dependencies and assumptions identified (existing infra, credentials, access)
+      
+      ## Feature Readiness
+      
+      - [ ] All functional requirements have clear acceptance criteria
+      - [ ] Infrastructure scenarios cover primary deployment flows
+      - [ ] Multi-tenancy requirements clearly defined (if applicable)
+      - [ ] Rollback procedures considered for each scenario
+      - [ ] No implementation details leak into specification
+      
+      ## Notes
+      
+      - Items marked incomplete require spec updates before `/specops.clarify` or `/specops.plan`
+      ```
+
+   b. **Run Validation Check**: Review the spec against each checklist item:
+      - For each item, determine if it passes or fails
+      - Document specific issues found (quote relevant spec sections)
+
+   c. **Handle Validation Results**:
+
+      - **If all items pass**: Mark checklist complete and proceed to step 6
+
+      - **If items fail (excluding [NEEDS CLARIFICATION])**:
+        1. List the failing items and specific issues
+        2. Update the spec to address each issue
+        3. Re-run validation until all items pass (max 3 iterations)
+        4. If still failing after 3 iterations, document remaining issues in checklist notes and warn user
+
+      - **If [NEEDS CLARIFICATION] markers remain**:
+        1. Extract all [NEEDS CLARIFICATION: ...] markers from the spec
+        2. **LIMIT CHECK**: If more than 3 markers exist, keep only the 3 most critical (by scope/security/UX impact) and make informed guesses for the rest
+        3. For each clarification needed (max 3), present options to user in this format:
+
+           ```markdown
+           ## Question [N]: [Topic]
+           
+           **Context**: [Quote relevant spec section]
+           
+           **What we need to know**: [Specific question from NEEDS CLARIFICATION marker]
+           
+           **Suggested Answers**:
+           
+           | Option | Answer | Implications |
+           |--------|--------|--------------|
+           | A      | [First suggested answer] | [What this means for the feature] |
+           | B      | [Second suggested answer] | [What this means for the feature] |
+           | C      | [Third suggested answer] | [What this means for the feature] |
+           | Custom | Provide your own answer | [Explain how to provide custom input] |
+           
+           **Your choice**: _[Wait for user response]_
+           ```
+
+        4. **CRITICAL - Table Formatting**: Ensure markdown tables are properly formatted:
+           - Use consistent spacing with pipes aligned
+           - Each cell should have spaces around content: `| Content |` not `|Content|`
+           - Header separator must have at least 3 dashes: `|--------|`
+           - Test that the table renders correctly in markdown preview
+        5. Number questions sequentially (Q1, Q2, Q3 - max 3 total)
+        6. Present all questions together before waiting for responses
+        7. Wait for user to respond with their choices for all questions (e.g., "Q1: A, Q2: Custom - [details], Q3: B")
+        8. Update the spec by replacing each [NEEDS CLARIFICATION] marker with the user's selected or provided answer
+        9. Re-run validation after all clarifications are resolved
+
+   d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
+
+7. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/specops.clarify` or `/specops.plan`).
+
+**NOTE:** The script creates and checks out the new branch and initializes the spec file before writing.
 
 ## General Guidelines
 
-### Quick Guidelines
+## Quick Guidelines
 
-- Focus on **WHAT** infrastructure is needed and **WHY**
-- Avoid **HOW** to implement (no Terraform modules, Ansible roles, ArgoCD apps)
-- Written for infrastructure stakeholders, not implementation details
-- Infrastructure-first language: resources, namespaces, quotas, policies
-- Multi-tenancy is always a consideration
-- Security and compliance upfront
+- Focus on **WHAT** infrastructure should exist and **WHY** (business/operational needs).
+- Avoid HOW to implement (no specific IaC tool syntax, vendor-specific configurations).
+- Written for platform teams and DevOps stakeholders, not just developers.
+- DO NOT create any checklists that are embedded in the spec. That will be a separate command.
 
 ### Section Requirements
 
-**Mandatory for Infrastructure**:
-- Overview with business context
-- Functional requirements (infrastructure resources)
-- Non-functional requirements (performance, security, reliability)
-- Infrastructure scenarios (deployment flows)
-- Multi-tenancy requirements (if applicable)
-- Dependencies (cloud, network, existing infrastructure)
+- **Mandatory sections**: Must be completed for every feature
+- **Optional sections**: Include only when relevant to the feature
+- When a section doesn't apply, remove it entirely (don't leave as "N/A")
 
-**Optional**:
-- Key entities (if data/state management involved)
-- Integration requirements (if connecting to external systems)
+### For AI Generation
 
-### Infrastructure-Specific Considerations
+When creating this spec from a user prompt:
 
-1. **Always think multi-tenant**: Even if starting with single org, design for future growth
-2. **Network isolation first**: Define network boundaries before other details
-3. **Resource quotas early**: Prevent resource contention between organizations
-4. **Compliance as requirement**: Security standards are functional requirements
-5. **Operational metrics**: Focus on deployment, availability, recovery metrics
+1. **Make informed guesses**: Use context, industry standards, and common patterns to fill gaps
+2. **Document assumptions**: Record reasonable defaults in the Assumptions section
+3. **Limit clarifications**: Maximum 3 [NEEDS CLARIFICATION] markers - use only for critical decisions that:
+   - Significantly impact infrastructure scope or multi-tenancy model
+   - Have multiple reasonable interpretations with different cost/security implications
+   - Lack any reasonable default (e.g., cloud provider, compliance requirements)
+4. **Prioritize clarifications**: multi-tenancy scope > compliance > performance targets > technical preferences
+5. **Think like an SRE**: Every vague requirement should fail the "testable and unambiguous" checklist item
+6. **Common areas needing clarification** (only if no reasonable default exists):
+   - Infrastructure scope and boundaries (include/exclude specific components)
+   - Organization/tenant list and access requirements (if multiple conflicting interpretations possible)
+   - Compliance requirements (when legally/financially significant - HIPAA, SOC2, PCI-DSS)
 
-### Common Infrastructure Patterns
+**Examples of reasonable defaults** (don't ask about these):
 
-**VM Provisioning Specs**:
-- Cloud provider and region
-- Instance types/sizes
-- Network configuration
-- Security groups/firewalls
-- Storage requirements
+- Namespace naming: `{org-name}-{environment}` pattern
+- Network policies: Default deny-all with explicit allows
+- Resource quotas: Based on organization size (small/medium/large tiers)
+- Backup retention: 30 days hot, 90 days cold, 1 year archive
+- RTO/RPO: Standard for application tier (critical/standard/low-priority)
+- Monitoring: Prometheus/Grafana stack unless specified otherwise
 
-**Kubernetes Deployment Specs**:
-- Namespace strategy
-- Resource quotas
-- Network policies
-- RBAC requirements
-- Ingress/routing
+### Success Criteria Guidelines
 
-**Application Deployment Specs**:
-- Container registry
-- Deployment strategy (rolling, blue-green)
-- Health checks
-- Resource limits
-- Persistence requirements
+Success criteria must be:
 
-**Monitoring/Observability Specs**:
-- Metrics to collect
-- Log aggregation
-- Alerting rules
-- Dashboard requirements
-- Retention policies
+1. **Measurable**: Include specific metrics (RTO, RPO, uptime percentage, provisioning time)
+2. **Technology-agnostic**: No mention of specific IaC tools, vendor versions, or proprietary configurations
+3. **Operations-focused**: Describe outcomes from platform/DevOps perspective, not implementation internals
+4. **Verifiable**: Can be tested/validated without knowing implementation details
 
-### Reasonable Infrastructure Defaults
+**Good examples**:
 
-**Don't ask about these - use industry standards**:
+- "Infrastructure provisioning completes in under 15 minutes"
+- "Cluster handles 1000 pods without performance degradation"
+- "All nodes reach Ready state within 5 minutes of provisioning"
+- "RTO under 4 hours, RPO under 1 hour for critical workloads"
+- "99.9% uptime SLA maintained across all tenant namespaces"
+- "Tenant isolation prevents cross-namespace network traffic"
 
-- **Namespace naming**: `{org-name}-{environment}` pattern
-- **Network policies**: Default deny-all with explicit allows
-- **Resource quotas**: Small org (2 CPU, 4Gi), Medium (5 CPU, 10Gi), Large (10 CPU, 20Gi)
-- **Backup retention**: 30 days hot, 90 days cold, 1 year archive
-- **Uptime SLA**: 99.9% for production, 99% for staging
-- **RTO/RPO**: Critical (1h/15m), Standard (4h/1h), Low (24h/4h)
-- **Image scanning**: Before deployment
-- **Secret rotation**: Quarterly minimum
-- **Audit logging**: Enabled for all production
+**Bad examples** (implementation-focused):
 
-### When to Ask for Clarification (Max 3)
-
-**Priority 1 - Scope/Multi-tenancy**:
-- Number of organizations unknown and can't infer
-- Conflicting organization requirements
-- Shared vs isolated resources decision critical
-
-**Priority 2 - Compliance/Security**:
-- Multiple compliance standards possible (HIPAA vs SOC2)
-- Data residency requirements unclear
-- Security boundaries significantly impact architecture
-
-**Priority 3 - Performance/Scale**:
-- User load unclear and no reasonable default
-- Geographic distribution requirements unknown
-- Critical latency requirements unspecified
-
-**Never ask about**:
-- Specific tool choices (that's for /specops.plan)
-- Implementation details
-- Standard practices with clear defaults
-
----
-
-**Remember**: This is an infrastructure specification, not a technical plan. Stay focused on WHAT infrastructure is needed and WHY, not HOW to build it. The constitution provides the standards, this spec defines the requirements.
+- "Terraform apply completes in under 10 minutes" (tool-specific, use "Infrastructure provisioning completes...")
+- "ArgoCD sync interval is 3 minutes" (tool-specific, use "Configuration changes reflect within...")
+- "Cilium network policies are applied" (tool-specific, use "Network isolation is enforced")
+- "Prometheus scrape interval is 15 seconds" (tool-specific, use "Metrics are available within...")
