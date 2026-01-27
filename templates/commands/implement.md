@@ -98,6 +98,97 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Application platform**: Setup deployment pipeline (GitOps, CI/CD)
    - **Validation and monitoring**: Verify deployment health, configure observability stack
 
+   **Helm Chart Discovery (CRITICAL - Zero YAML Writing)**:
+   
+   Before generating any Kubernetes manifest, agent MUST:
+   
+   1. **Check for existing Helm chart**:
+      ```bash
+      # Search ArtifactHub
+      curl -s "https://artifacthub.io/api/v1/packages/search?ts_query_web=<component-name>&kind=0" | jq '.packages[0]'
+      
+      # Check common repositories
+      helm search hub <component-name>
+      helm search repo <component-name>
+      ```
+   
+   2. **Decision Matrix**:
+      | Condition | Action |
+      |-----------|--------|
+      | Official Helm chart exists | Use Helm + ArgoCD Application |
+      | Community chart with >1000 downloads | Evaluate, prefer Helm if well-maintained |
+      | No Helm chart available | Generate Kustomize base + overlays |
+      | Custom application | Kustomize with base/overlays structure |
+   
+   3. **Generate ArgoCD Application**:
+      
+      **For Helm-based deployments**:
+      ```yaml
+      apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: <app-name>
+        namespace: argocd
+      spec:
+        project: default
+        source:
+          repoURL: <helm-repo-url>
+          chart: <chart-name>
+          targetRevision: <chart-version>
+          helm:
+            valuesObject:
+              # Environment-specific values here
+        destination:
+          server: https://kubernetes.default.svc
+          namespace: <target-namespace>
+        syncPolicy:
+          automated:
+            prune: true
+            selfHeal: true
+      ```
+      
+      **For Kustomize-based deployments**:
+      ```yaml
+      apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: <app-name>
+        namespace: argocd
+      spec:
+        project: default
+        source:
+          repoURL: <git-repo-url>
+          path: kubernetes/apps/<app-name>/overlays/<env>
+          targetRevision: HEAD
+        destination:
+          server: https://kubernetes.default.svc
+          namespace: <target-namespace>
+        syncPolicy:
+          automated:
+            prune: true
+            selfHeal: true
+      ```
+   
+   4. **Kustomize Structure** (when no Helm chart):
+      ```
+      kubernetes/apps/<app-name>/
+      ├── base/
+      │   ├── kustomization.yaml
+      │   ├── deployment.yaml
+      │   ├── service.yaml
+      │   └── ingress.yaml (optional)
+      └── overlays/
+          ├── dev/
+          │   ├── kustomization.yaml
+          │   └── patches/
+          ├── staging/
+          │   ├── kustomization.yaml
+          │   └── patches/
+          └── prod/
+              ├── kustomization.yaml
+              └── patches/
+      ```
+
 8. Progress tracking and error handling:
    - Report progress after each completed task
    - Halt execution if any non-parallel task fails
@@ -130,10 +221,12 @@ You **MUST** consider the user input before proceeding (if not empty).
   |-------|-----------|
   | 1 | Tools available, credentials work |
   | 2 | terraform plan passes |
+  | 2.5 | ArgoCD installed, Helm repos configured |
   | 3 | All nodes Ready, network(Cilium) healthy |
+  | 4 | Infrastructure apps synced (ingress, cert-manager) |
   | 5 | Network isolation verified |
-  | 6 | Apps running, accessible |
-  | 7 | Metrics flowing, docs complete |
+  | 6 | Apps running, accessible via ingress |
+  | 7 | Metrics flowing, dashboards configured |
 
   STOP if any validation fails. Suggest rollback or fix.
 

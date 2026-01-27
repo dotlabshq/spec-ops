@@ -73,6 +73,43 @@ Examples of foundational tasks (adjust based on your project):
 
 ---
 
+## Phase 2.5: GitOps Bootstrap (Agent-Managed)
+
+**Purpose**: ArgoCD and base Kubernetes structure - Agent provisions automatically
+
+**⚠️ ZERO YAML WRITING**: Agent discovers Helm charts and generates all manifests
+
+### Helm Chart Discovery (Agent performs automatically)
+
+- [ ] T010 [P] Discover nginx-ingress Helm chart from kubernetes.github.io/ingress-nginx
+- [ ] T011 [P] Discover cert-manager Helm chart from charts.jetstack.io
+- [ ] T012 [P] Discover ArgoCD Helm chart from argoproj.github.io/argo-helm
+- [ ] T013 [P] Discover monitoring stack from prometheus-community
+
+### ArgoCD Installation
+
+- [ ] T014 Generate ArgoCD namespace in kubernetes/bootstrap/argocd/namespace.yaml
+- [ ] T015 Generate ArgoCD Helm values in kubernetes/bootstrap/argocd/values.yaml
+- [ ] T016 Generate ArgoCD Application (self-managed) in kubernetes/argocd/applications/argocd.yaml
+- [ ] T017 Apply ArgoCD installation via kubectl (bootstrap only)
+
+### Infrastructure Applications
+
+- [ ] T018 [P] Generate ingress-nginx ArgoCD Application in kubernetes/argocd/applications/ingress-nginx.yaml
+- [ ] T019 [P] Generate cert-manager ArgoCD Application in kubernetes/argocd/applications/cert-manager.yaml
+- [ ] T020 [P] Generate external-secrets ArgoCD Application in kubernetes/argocd/applications/external-secrets.yaml
+- [ ] T021 [P] Generate monitoring stack ArgoCD Application in kubernetes/argocd/applications/monitoring.yaml
+
+### App-of-Apps Pattern
+
+- [ ] T022 Generate bootstrap app-of-apps in kubernetes/argocd/applications/bootstrap.yaml
+- [ ] T023 Generate infrastructure app-of-apps in kubernetes/argocd/applications/infrastructure.yaml
+- [ ] T024 Generate applications app-of-apps in kubernetes/argocd/applications/apps.yaml
+
+**Checkpoint**: GitOps platform ready - ArgoCD manages all subsequent deployments
+
+---
+
 ## Phase 3: Infrastructure Scenario 1 - [Title] (Priority: P1) 🎯 MVP
 
 **Goal**: [Brief description of what this scenario delivers]

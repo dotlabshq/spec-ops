@@ -90,6 +90,30 @@
 - **FR-004**: Infrastructure MUST [data requirement, e.g., "persist etcd snapshots hourly"]
 - **FR-005**: Infrastructure MUST [behavior, e.g., "log all kubectl commands for audit"]
 
+### Deployment Strategy *(mandatory for Kubernetes workloads)*
+
+<!--
+  IMPORTANT: Agent will use this section to determine deployment approach.
+  Specify preferences; agent will discover and apply appropriate methods.
+-->
+
+**Deployment Preference**:
+- [ ] Prefer Helm charts when available (recommended)
+- [ ] Kustomize only (no Helm)
+- [ ] Raw manifests only (simplest, least flexible)
+
+**Standard Components** (check what you need):
+- [ ] Ingress Controller (nginx-ingress recommended)
+- [ ] TLS/Certificate Management (cert-manager)
+- [ ] Monitoring Stack (Prometheus + Grafana)
+- [ ] GitOps Controller (ArgoCD)
+- [ ] Secret Management (external-secrets or sealed-secrets)
+- [ ] Service Mesh (Istio/Linkerd - optional)
+
+**Custom Applications**:
+- Application 1: [NAME] - [Brief description, port, replicas needed]
+- Application 2: [NAME] - [Brief description, port, replicas needed]
+
 *Example of marking unclear requirements:*
 
 - **FR-006**: Infrastructure MUST use [NEEDS CLARIFICATION: CNI not specified - Cilium, Calico, or Flannel?]

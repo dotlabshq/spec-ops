@@ -73,6 +73,13 @@ Load current spec and perform structured coverage scan. For each category, mark:
 - [ ] Cilium version and configuration
 - [ ] ArgoCD version and sync strategy
 
+**Deployment Strategy**:
+- [ ] Helm vs Kustomize preference specified
+- [ ] Standard components identified (ingress, cert-manager, monitoring)
+- [ ] Custom applications listed with requirements
+- [ ] ArgoCD project structure defined
+- [ ] Environment promotion strategy (dev → staging → prod)
+
 **Deployment Architecture**:
 - [ ] High-level architecture clear
 - [ ] Component relationships defined
@@ -541,13 +548,30 @@ Q: Kubernetes distribution preference?
 ```
 Q: Application deployment approach via ArgoCD?
 
-**Recommended:** Option B - Helm most flexible
+**Recommended:** Option B - Helm-first with Kustomize fallback (agent-managed)
 
 | Option | Description |
 |--------|-------------|
-| A | Plain YAML (simple, verbose) |
-| B | Helm (templating, reusable) |
-| C | Kustomize (overlay-based) |
+| A | Helm only (requires charts for everything) |
+| B | Helm-first, Kustomize fallback (recommended, most flexible) |
+| C | Kustomize only (no Helm, more verbose) |
+| D | Raw YAML (not recommended, no templating) |
+```
+
+**Standard Infrastructure Components**:
+```
+Q: Which infrastructure components should be auto-provisioned?
+
+**Recommended:** All of A-D for production-ready setup
+
+| Option | Description |
+|--------|-------------|
+| A | Ingress Controller (nginx-ingress - required for external access) |
+| B | TLS Automation (cert-manager - required for HTTPS) |
+| C | Monitoring Stack (Prometheus + Grafana) |
+| D | Secret Management (external-secrets or sealed-secrets) |
+| E | Service Mesh (Istio/Linkerd - optional, adds complexity) |
+| Short | Specify subset: "A, B, C" |
 ```
 
 ---
