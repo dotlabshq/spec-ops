@@ -1,4 +1,3 @@
-````markdown
 ---
 description: Deploy an application to Kubernetes using ArgoCD with automatic Helm/Kustomize detection. Zero YAML writing required.
 handoffs: 
@@ -126,5 +125,3 @@ Deploy applications to Kubernetes **without writing any YAML**. The agent handle
 - All manifests generated and committed to Git
 - ArgoCD handles deployment via GitOps
 - Refer to `memory/constitution.md` for Helm sources and standards
-````
-`````
