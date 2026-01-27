@@ -37,6 +37,11 @@ Follow this execution flow:
    - `[MULTI_TENANCY_STRATEGY]` - Namespace-based, Cluster-based, or Hybrid
    - `[NETWORK_POLICY_APPROACH]` - Cilium L3/L4, Cilium L7, or Kubernetes NetworkPolicy
    
+   **Deployment Strategy placeholders (CRITICAL for Zero-YAML):**
+   - `[DEPLOYMENT_STRATEGY]` - Helm-first with Kustomize fallback (recommended) | Kustomize-only | Raw manifests
+   - `[HELM_CHART_DISCOVERY]` - ArtifactHub, Bitnami, official vendor repos
+   - `[STARTER_COMPONENTS]` - nginx-ingress, cert-manager, external-secrets, prometheus-stack, argocd
+   
    **Governance placeholders:**
    - `[RATIFICATION_DATE]` - Original adoption date (ISO format YYYY-MM-DD). If unknown, ask user or mark `TODO(RATIFICATION_DATE)`.
    - `[LAST_AMENDED_DATE]` - Today's date if changes are made (ISO format YYYY-MM-DD), otherwise keep previous.
@@ -64,6 +69,82 @@ Follow this execution flow:
    - Ensure Technology Stack section specifies exact versions and standards.
    - Ensure Multi-Tenancy section details namespace strategy and network isolation.
    - Ensure Governance section lists amendment procedure, versioning policy, and compliance review expectations.
+
+   **MANDATORY: Add Zero-YAML Development Principle**
+   
+   After the first principle, add this principle (agent MUST include this):
+   
+   ```markdown
+   ### Zero-YAML Development
+   <!-- CRITICAL PRINCIPLE for SpecOps -->
+   **AI agent manages all Kubernetes manifests - users never write YAML manually**
+   - Agent generates all Kubernetes resources (Deployments, Services, Ingress, etc.)
+   - Agent selects appropriate deployment strategy (Helm vs Kustomize vs raw manifests)
+   - Agent discovers Helm charts from artifact registries before generating custom YAML
+   - Agent creates ArgoCD Application definitions automatically
+   - User describes intent in natural language; agent translates to infrastructure
+   - All generated manifests stored in Git for GitOps reconciliation
+   
+   **Decision Flow for Deployments:**
+   1. Check if Helm chart exists (ArtifactHub, Bitnami, official repos)
+   2. If Helm exists → ArgoCD + Helm chart + values overlay
+   3. If no Helm → ArgoCD + Kustomize with base manifests
+   4. Custom apps → Kustomize with environment overlays
+   ```
+
+   **MANDATORY: Add Deployment Strategy Standards Section**
+   
+   After GitOps Platform section, add:
+   
+   ```markdown
+   ### Deployment Strategy Standards
+   <!-- CRITICAL: Agent-managed deployment decisions -->
+   **Helm Chart Discovery**:
+   - Primary sources: ArtifactHub, Bitnami, official vendor repos
+   - Agent MUST check for existing Helm charts before generating custom manifests
+   - Prefer community-maintained charts with >1000 downloads and active maintenance
+   - Pin chart versions explicitly (no `latest` or floating versions)
+   
+   **ArgoCD Application Patterns**:
+   [Include Helm-based and Kustomize-based Application YAML examples]
+   
+   **Kustomize Structure**:
+   [Include standard base/overlays directory structure]
+   
+   **Starter Infrastructure Components** (Agent provisions these automatically):
+   | Component | Helm Chart | Repository | Purpose |
+   |-----------|------------|------------|---------|
+   | nginx-ingress | ingress-nginx | https://kubernetes.github.io/ingress-nginx | Ingress controller |
+   | cert-manager | cert-manager | https://charts.jetstack.io | TLS certificates |
+   | external-secrets | external-secrets | https://charts.external-secrets.io | Secret management |
+   | prometheus-stack | kube-prometheus-stack | https://prometheus-community.github.io/helm-charts | Monitoring |
+   | argocd | argo-cd | https://argoproj.github.io/argo-helm | GitOps controller |
+   | sealed-secrets | sealed-secrets | https://bitnami-labs.github.io/sealed-secrets | Git-safe secrets |
+   ```
+
+   **MANDATORY: Add Quick Start Guide Section**
+   
+   At the end of the constitution (after Governance), add:
+   
+   ```markdown
+   ## Quick Start Guide (Beginner-Friendly)
+   
+   ### Minimum Viable Infrastructure
+   [ASCII diagram of ArgoCD → Infrastructure Components → Applications]
+   
+   ### Getting Started Commands
+   1. /specops.specify - Create infrastructure specification
+   2. /specops.clarify - Clarify requirements (optional)
+   3. /specops.plan - Create implementation plan
+   4. /specops.tasks - Generate tasks
+   5. /specops.implement - Deploy infrastructure
+   6. /specops.deploy - Deploy your application
+   
+   ### Zero YAML Promise
+   Users never write: Deployment YAML, Service YAML, Ingress YAML, etc.
+   Users only describe: "Deploy my API with 3 replicas", "Add monitoring"
+   Agent handles: Helm discovery, manifest generation, ArgoCD setup, Git commits
+   ```
 
 4. Consistency propagation checklist (convert prior checklist into active validations):
    - Read `/templates/plan-template.md` and ensure any "Constitution Check" or rules align with updated principles.
@@ -131,6 +212,10 @@ Follow this execution flow:
    - [ ] Kubernetes standards include: dry-run, kubeval/kubeconform, network policies
    - [ ] Cilium configuration specified: version, network policies, Hubble
    - [ ] ArgoCD configuration specified: sync policies, projects, RBAC
+   - [ ] Zero-YAML Development principle included with decision flow
+   - [ ] Deployment Strategy Standards section with Helm/Kustomize patterns
+   - [ ] Starter Infrastructure Components table populated
+   - [ ] Quick Start Guide section with commands and Zero YAML Promise
    
    **Consistency checks:**
    - [ ] All templates reference constitution principles
