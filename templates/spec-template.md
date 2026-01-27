@@ -90,29 +90,14 @@
 - **FR-004**: Infrastructure MUST [data requirement, e.g., "persist etcd snapshots hourly"]
 - **FR-005**: Infrastructure MUST [behavior, e.g., "log all kubectl commands for audit"]
 
-### Deployment Strategy *(mandatory for Kubernetes workloads)*
+### Deployment Requirements *(if Kubernetes workloads)*
 
-<!--
-  IMPORTANT: Agent will use this section to determine deployment approach.
-  Specify preferences; agent will discover and apply appropriate methods.
--->
+<!-- Deployment strategy (Helm/Kustomize) determined by constitution. List components here. -->
 
-**Deployment Preference**:
-- [ ] Prefer Helm charts when available (recommended)
-- [ ] Kustomize only (no Helm)
-- [ ] Raw manifests only (simplest, least flexible)
-
-**Standard Components** (check what you need):
-- [ ] Ingress Controller (nginx-ingress recommended)
-- [ ] TLS/Certificate Management (cert-manager)
-- [ ] Monitoring Stack (Prometheus + Grafana)
-- [ ] GitOps Controller (ArgoCD)
-- [ ] Secret Management (external-secrets or sealed-secrets)
-- [ ] Service Mesh (Istio/Linkerd - optional)
+**Required Components**: [e.g., ingress, monitoring, cert-manager - see constitution for available options]
 
 **Custom Applications**:
-- Application 1: [NAME] - [Brief description, port, replicas needed]
-- Application 2: [NAME] - [Brief description, port, replicas needed]
+- [APP_NAME]: [image, port, replicas]
 
 *Example of marking unclear requirements:*
 

@@ -31,62 +31,15 @@
 **Constraints**: [e.g., budget limits, compliance (SOC2, HIPAA), data residency or NEEDS CLARIFICATION]  
 **Scale/Scope**: [e.g., 5 organizations, 50 namespaces, 100 nodes or NEEDS CLARIFICATION]
 
-## Helm Chart Discovery
+## Deployment Components
 
-<!--
-  CRITICAL: Agent MUST check for existing Helm charts before generating custom manifests.
-  This section documents which components use Helm vs custom Kustomize.
--->
+<!-- Agent handles Helm discovery per constitution. List required components here. -->
 
-### Infrastructure Components
+| Component | Required | Notes |
+|-----------|----------|-------|
+| [COMPONENT] | Yes/No | [Notes] |
 
-| Component | Helm Available? | Chart Source | Version | Notes |
-|-----------|-----------------|--------------|---------|-------|
-| Ingress Controller | ✅ Yes | kubernetes.github.io/ingress-nginx | 4.x | nginx-ingress recommended |
-| Cert Manager | ✅ Yes | charts.jetstack.io | 1.x | TLS automation |
-| ArgoCD | ✅ Yes | argoproj.github.io/argo-helm | 5.x | GitOps controller |
-| Prometheus Stack | ✅ Yes | prometheus-community | 50.x | Full monitoring |
-| External Secrets | ✅ Yes | charts.external-secrets.io | 0.9.x | Cloud secret sync |
-| [Custom Component] | ❌ No | N/A | - | Use Kustomize |
-
-### Helm Repository Configuration
-
-```yaml
-# ArgoCD Helm repositories (agent generates this)
-apiVersion: v1
-kind: Secret
-metadata:
-  name: helm-repo-[NAME]
-  namespace: argocd
-  labels:
-    argocd.argoproj.io/secret-type: repository
-stringData:
-  name: [REPO_NAME]
-  url: [REPO_URL]
-  type: helm
-```
-
-### Custom Application Deployment
-
-For applications without Helm charts, agent generates Kustomize structure:
-
-```
-kubernetes/
-├── apps/
-│   └── [app-name]/
-│       ├── base/
-│       │   ├── kustomization.yaml
-│       │   ├── deployment.yaml
-│       │   ├── service.yaml
-│       │   └── ingress.yaml
-│       └── overlays/
-│           ├── dev/
-│           ├── staging/
-│           └── prod/
-└── argocd/
-    └── applications/
-        └── [app-name].yaml
-```
+**Custom Applications**: [List apps that need Kustomize structure]
 
 ## Constitution Check
 
@@ -176,53 +129,6 @@ kubernetes/
 
 **Structure Decision**: [Document the selected structure and reference the real
 directories captured above]
-
-## Starter Infrastructure (Agent-Managed)
-
-<!--
-  These components are automatically provisioned by the agent.
-  User specifies requirements; agent handles Helm discovery and ArgoCD setup.
--->
-
-### Phase 0: Bootstrap Components
-
-The agent provisions these foundational components automatically:
-
-```
-kubernetes/
-├── bootstrap/                    # First-deployed components
-│   ├── argocd/                  # GitOps controller (self-managed)
-│   │   ├── install/             # ArgoCD installation
-│   │   └── projects/            # ArgoCD projects per tenant
-│   └── namespaces/              # Namespace definitions
-│
-├── infrastructure/              # Core platform services
-│   ├── ingress-nginx/          # Ingress controller (Helm)
-│   ├── cert-manager/           # TLS automation (Helm)
-│   ├── external-secrets/       # Secret management (Helm)
-│   └── monitoring/             # Prometheus + Grafana (Helm)
-│
-├── apps/                        # Application deployments
-│   └── [app-name]/             # Per-app Kustomize structure
-│       ├── base/
-│       └── overlays/
-│
-└── argocd/
-    └── applications/            # ArgoCD Application definitions
-        ├── bootstrap.yaml       # App-of-apps for bootstrap
-        ├── infrastructure.yaml  # App-of-apps for infra
-        └── apps.yaml           # App-of-apps for user apps
-```
-
-### Deployment Decision Matrix
-
-| Scenario | Strategy | Agent Action |
-|----------|----------|--------------|
-| Component has official Helm chart | Helm + ArgoCD | Discover chart, create ArgoCD Application with Helm source |
-| Component has community Helm chart (>1k downloads) | Helm + ArgoCD | Validate chart quality, create ArgoCD Application |
-| No Helm chart available | Kustomize + ArgoCD | Generate base manifests, create overlays, ArgoCD Application |
-| Custom user application | Kustomize + ArgoCD | Create Kustomize structure, Dockerfile if needed |
-| Existing Helm chart needs customization | Helm + values overlay | Use Helm with custom values.yaml overlay |
 
 ## Complexity Tracking
 

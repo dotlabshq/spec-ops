@@ -73,12 +73,9 @@ Load current spec and perform structured coverage scan. For each category, mark:
 - [ ] Cilium version and configuration
 - [ ] ArgoCD version and sync strategy
 
-**Deployment Strategy**:
-- [ ] Helm vs Kustomize preference specified
-- [ ] Standard components identified (ingress, cert-manager, monitoring)
-- [ ] Custom applications listed with requirements
-- [ ] ArgoCD project structure defined
-- [ ] Environment promotion strategy (dev → staging → prod)
+**Deployment Requirements**:
+- [ ] Required infrastructure components identified
+- [ ] Custom applications listed
 
 **Deployment Architecture**:
 - [ ] High-level architecture clear
@@ -544,34 +541,17 @@ Q: Kubernetes distribution preference?
 | B | Self-hosted (RKE2/K3s - more control) |
 ```
 
-**Deployment Method**:
+**Infrastructure Components**:
 ```
-Q: Application deployment approach via ArgoCD?
+Q: Which infrastructure components do you need?
 
-**Recommended:** Option B - Helm-first with Kustomize fallback (agent-managed)
+**Recommended:** See constitution for standard components
 
 | Option | Description |
 |--------|-------------|
-| A | Helm only (requires charts for everything) |
-| B | Helm-first, Kustomize fallback (recommended, most flexible) |
-| C | Kustomize only (no Helm, more verbose) |
-| D | Raw YAML (not recommended, no templating) |
-```
-
-**Standard Infrastructure Components**:
-```
-Q: Which infrastructure components should be auto-provisioned?
-
-**Recommended:** All of A-D for production-ready setup
-
-| Option | Description |
-|--------|-------------|
-| A | Ingress Controller (nginx-ingress - required for external access) |
-| B | TLS Automation (cert-manager - required for HTTPS) |
-| C | Monitoring Stack (Prometheus + Grafana) |
-| D | Secret Management (external-secrets or sealed-secrets) |
-| E | Service Mesh (Istio/Linkerd - optional, adds complexity) |
-| Short | Specify subset: "A, B, C" |
+| A | Full stack (ingress, TLS, monitoring, secrets) |
+| B | Minimal (ingress only) |
+| C | Custom selection |
 ```
 
 ---
