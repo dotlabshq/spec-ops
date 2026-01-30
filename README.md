@@ -18,7 +18,7 @@ SpecOps brings the **Spec-Driven Development** methodology to Infrastructure as 
 3. **Execute** with AI-assisted automation
 4. **Deploy** confidently with GitOps
 
-SpecOps is inspired by [GitHub's Spec Kit](https://github.com/github/spec-kit) and adapted specifically for infrastructure engineering.
+SpecOps is inspired by [GitHub's Spec Kit](https://github.com/dotlabshq/spec-ops) and adapted specifically for infrastructure engineering.
 
 ---
 
@@ -41,7 +41,7 @@ SpecOps is inspired by [GitHub's Spec Kit](https://github.com/github/spec-kit) a
 
 ```bash
 # Install SpecOps CLI
-uv tool install specops-cli --from git+https://github.com/dotlabshq/specops.git
+uv tool install specops-cli --from git+https://github.com/dotlabshq/spec-ops.git
 
 # Verify installation
 specops check
@@ -356,7 +356,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgements
 
-- Inspired by [GitHub Spec Kit](https://github.com/github/spec-kit)
+- Inspired by [GitHub Spec Kit](https://github.com/dotlabshq/spec-ops)
 - Built on top of industry-standard tools: Terraform, Ansible, Kubernetes, ArgoCD, Cilium
 
 ---

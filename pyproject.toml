@@ -1,77 +1,23 @@
+[project]
+name = "speops-cli"
+version = "0.0.22"
+description = "SpecOps CLI, part of DotLabs Spec Ops. A tool to bootstrap your projects for Spec-Driven Infrastructure as Code."
+requires-python = ">=3.11"
+dependencies = [
+    "typer",
+    "rich",
+    "httpx[socks]",
+    "platformdirs",
+    "readchar",
+    "truststore>=0.10.4",
+]
+
+[project.scripts]
+speops = "specops_cli:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[project]
-name = "specops-cli"
-version = "0.0.1"
-description = "Spec-Driven Infrastructure as Code toolkit for systematic deployment automation"
-readme = "README.md"
-requires-python = ">=3.11"
-license = "MIT"
-keywords = ["infrastructure", "iac", "devops", "terraform", "ansible", "argocd", "kubernetes", "cilium", "gitops", "spec-driven"]
-authors = [
-    { name = "SpecOps Contributors" }
-]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Software Development :: Build Tools",
-    "Topic :: System :: Systems Administration",
-]
-dependencies = [
-    "click>=8.1.7",
-    "rich>=13.7.0",
-    "pyyaml>=6.0.1",
-    "requests>=2.31.0",
-    "gitpython>=3.1.40",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.4.3",
-    "pytest-cov>=4.1.0",
-    "black>=23.12.0",
-    "ruff>=0.1.8",
-    "mypy>=1.7.1",
-]
-
-[project.urls]
-Homepage = "https://github.com/dotlabshq/specops"
-Documentation = "https://github.com/dotlabshq/specops#readme"
-Repository = "https://github.com/dotlabshq/specops"
-Issues = "https://github.com/dotlabshq/specops/issues"
-
-[project.scripts]
-specops = "specops_cli.cli:main"
-
 [tool.hatch.build.targets.wheel]
 packages = ["src/specops_cli"]
-
-[tool.black]
-line-length = 100
-target-version = ["py311"]
-
-[tool.ruff]
-line-length = 100
-target-version = "py311"
-
-[tool.ruff.lint]
-select = ["E", "F", "I", "N", "W"]
-ignore = []
-
-[tool.mypy]
-python_version = "3.11"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
