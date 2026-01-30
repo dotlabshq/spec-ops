@@ -1,6 +1,6 @@
 [project]
-name = "speops-cli"
-version = "0.0.22"
+name = "specops-cli"
+version = "0.1.2"
 description = "SpecOps CLI, part of DotLabs Spec Ops. A tool to bootstrap your projects for Spec-Driven Infrastructure as Code."
 requires-python = ">=3.11"
 dependencies = [
@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-speops = "specops_cli:main"
+specops = "specops_cli:main"
 
 [build-system]
 requires = ["hatchling"]
